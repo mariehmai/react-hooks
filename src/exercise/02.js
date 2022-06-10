@@ -3,13 +3,16 @@
 
 import * as React from 'react'
 
-function useLocalStorageState(key, defaultValue) {
-  const [value, setValue] = React.useState(
-    () => window.localStorage.get(key) || defaultValue,
-  )
+function useLocalStorageState(key, defaultValue = '') {
+  const [value, setValue] = React.useState(() => {
+    if (window.localStorage.get(key)) {
+      return JSON.parse(window.localStorage.get(key))
+    }
+    return defaultValue
+  })
 
   React.useEffect(() => {
-    window.localStorage.setItem(key, value)
+    window.localStorage.setItem(key, JSON.stringify(value))
   }, [key, value])
 
   return {value, setValue}

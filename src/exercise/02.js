@@ -12,11 +12,11 @@ function useLocalStorageState(
     if (window.localStorage.get(key)) {
       return deserialize(window.localStorage.get(key))
     }
-    return defaultValue
+    return typeof defaultValue === 'function' ? defaultValue() : defaultValue
   })
 
   React.useEffect(() => {
-    serialize(key, JSON.stringify(value))
+    window.localStorage.setItem(key, serialize(value))
   }, [key, value, serialize])
 
   return {value, setValue}

@@ -37,46 +37,42 @@ function Board({squares, onClick}) {
 const initialBoard = Array(9).fill(null)
 
 function Game() {
+  const [currentStep, setCurrentStep] = useLocalStorageState('ttt:step', 0)
   const [history, setHistory] = useLocalStorageState('ttt:history', [
     initialBoard,
   ])
-  const [currentSquares, setCurrentSquares] = useLocalStorageState(
-    'ttt:step',
-    initialBoard,
-  )
 
+  const currentSquares = history[currentStep]
   const nextValue = calculateNextValue(currentSquares)
   const winner = calculateWinner(currentSquares)
   const status = calculateStatus(winner, currentSquares, nextValue)
-  const isCurrentMove = idx =>
-    JSON.stringify(history[idx]) === JSON.stringify(currentSquares)
 
-  const moves = history.map((_move, step) => (
-    <li key={step}>
-      <button
-        disabled={isCurrentMove(step)}
-        onClick={() => setCurrentSquares(history[step])}
-      >
-        Go to {step === 0 ? 'start game' : `move #${step}`}
-        {isCurrentMove(step) ? ' (current)' : ''}
-      </button>
-    </li>
-  ))
+  const moves = history.map((_move, step) => {
+    const isCurrentStep = step === currentStep
+
+    return (
+      <li key={step}>
+        <button disabled={isCurrentStep} onClick={() => setCurrentStep(step)}>
+          Go to {step === 0 ? 'start game' : `move #${step}`}
+          {isCurrentStep ? ' (current)' : ''}
+        </button>
+      </li>
+    )
+  })
 
   function selectSquare(square) {
     if (!!winner || !!currentSquares[square]) return
 
+    const newHistory = history.slice(0, currentStep + 1)
     const squaresCopy = [...currentSquares]
     squaresCopy[square] = nextValue
-    setCurrentSquares(squaresCopy)
-    setHistory([
-      ...history.slice(0, squaresCopy.filter(Boolean).length),
-      squaresCopy,
-    ])
+
+    setHistory([...newHistory, squaresCopy])
+    setCurrentStep(newHistory.length)
   }
 
   function restart() {
-    setCurrentSquares(initialBoard)
+    setCurrentStep(0)
     setHistory([initialBoard])
   }
 
